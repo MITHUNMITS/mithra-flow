@@ -412,7 +412,7 @@ def _handle_return(state: _TraceState, frame: FrameType, arg: Any) -> None:
     if state.stack[-1].name != f"{code.co_name}()":
         return
 
-    if _is_coroutine_suspension(frame):
+    if _is_coroutine_suspension(frame, arg):
         state.stack.pop()
         return
 
@@ -459,11 +459,13 @@ def _is_external_frame(filename: str) -> bool:
     return not os.path.abspath(filename).startswith(cwd + os.sep)
 
 
-def _is_coroutine_suspension(frame: FrameType) -> bool:
+def _is_coroutine_suspension(frame: FrameType, arg: Any) -> bool:
     if not frame.f_code.co_flags & inspect.CO_COROUTINE:
         return False
+    if inspect.isawaitable(arg):
+        return True
     opcode = _current_opcode(frame)
-    return opcode.startswith("YIELD")
+    return "YIELD" in opcode
 
 
 def _current_opcode(frame: FrameType) -> str:
