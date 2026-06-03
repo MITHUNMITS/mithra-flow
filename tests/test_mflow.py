@@ -1,6 +1,7 @@
 import asyncio
 import json
 import re
+from types import SimpleNamespace
 
 from mithra_flow import MFlowResult, __version__, mflow, span, trace
 from mithra_flow.decorator import (
@@ -8,6 +9,7 @@ from mithra_flow.decorator import (
     _discover_project_root,
     _is_dependency_frame,
     _is_external_frame,
+    _is_project_frame,
 )
 
 
@@ -244,3 +246,23 @@ def test_external_frames_are_checked_against_project_root():
 
     assert not _is_external_frame(__file__, root)
     assert _is_external_frame("/tmp/outside.py", root)
+
+
+def test_project_frame_requires_code_and_module_files_under_root():
+    root = "/project"
+    frame = SimpleNamespace(
+        f_code=SimpleNamespace(co_filename="/project/controllers/user.py"),
+        f_globals={"__file__": "/project/controllers/user.py"},
+    )
+
+    assert _is_project_frame(frame, root)
+
+
+def test_generated_dependency_frame_is_not_project_code():
+    root = "/project"
+    frame = SimpleNamespace(
+        f_code=SimpleNamespace(co_filename="/project/controllers/user.py"),
+        f_globals={"__file__": "/project/.venv/lib/python3.12/site-packages/sqlalchemy/sql.py"},
+    )
+
+    assert not _is_project_frame(frame, root)

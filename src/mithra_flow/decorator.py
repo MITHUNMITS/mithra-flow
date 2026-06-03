@@ -493,10 +493,7 @@ def _should_trace_frame(state: _TraceState, frame: FrameType) -> bool:
     module = frame.f_globals.get("__name__", "")
     target = f"{module}:{frame.f_code.co_name}:{filename}"
 
-    if not state.config.trace_dependencies and _is_external_frame(filename, state.config.root_path):
-        return False
-
-    if not state.config.trace_dependencies and _is_dependency_frame(filename):
+    if not state.config.trace_dependencies and not _is_project_frame(frame, state.config.root_path):
         return False
 
     if _matches(target, state.config.exclude):
@@ -519,6 +516,28 @@ def _is_external_frame(filename: str, root_path: str | None = None) -> bool:
     root = os.path.abspath(root_path or os.getcwd())
     path = os.path.abspath(filename)
     return path != root and not path.startswith(root + os.sep)
+
+
+def _is_project_frame(frame: FrameType, root_path: str | None = None) -> bool:
+    paths = _frame_source_paths(frame)
+    if not paths:
+        return False
+    return all(
+        not _is_external_frame(path, root_path) and not _is_dependency_frame(path)
+        for path in paths
+    )
+
+
+def _frame_source_paths(frame: FrameType) -> tuple[str, ...]:
+    paths = {
+        path
+        for path in (
+            frame.f_code.co_filename,
+            frame.f_globals.get("__file__"),
+        )
+        if isinstance(path, str) and path and not path.startswith("<")
+    }
+    return tuple(os.path.abspath(path) for path in paths)
 
 
 def _discover_project_root(filename: str) -> str:
