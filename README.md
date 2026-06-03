@@ -1,5 +1,10 @@
 # mithra-flow
 
+[![PyPI](https://img.shields.io/pypi/v/mithra-flow.svg)](https://pypi.org/project/mithra-flow/)
+[![Python](https://img.shields.io/pypi/pyversions/mithra-flow.svg)](https://pypi.org/project/mithra-flow/)
+[![Tests](https://github.com/MITHUNMITS/mithra-flow/actions/workflows/test.yml/badge.svg)](https://github.com/MITHUNMITS/mithra-flow/actions/workflows/test.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 `mithra-flow` traces nested Python function calls while a decorated function runs.
 It is built for terminal-first debugging: no web UI, no database, no framework lock-in.
 
@@ -23,6 +28,13 @@ It is built for terminal-first debugging: no web UI, no database, no framework l
 - Measures duration with `time.perf_counter`.
 - Prints a colored Rich tree in the terminal.
 - Supports filters, depth limits, duration thresholds, args, return values, errors, JSON, Mermaid, files, manual spans, and context manager traces.
+
+## Project Links
+
+- PyPI: https://pypi.org/project/mithra-flow/
+- GitHub: https://github.com/MITHUNMITS/mithra-flow
+- Changelog: [CHANGELOG.md](CHANGELOG.md)
+- License: [LICENSE](LICENSE)
 
 ## Use Cases
 
@@ -79,6 +91,20 @@ Run tests:
 ```bash
 python3 -m pytest -q
 ```
+
+## Size And Performance Notes
+
+The library is intentionally small. The first published wheel is roughly 11 KB, and the source distribution is roughly 12 KB.
+
+Tracing uses `sys.setprofile`, so it is intended for debugging, local development, staging, tests, and targeted diagnostics. For production systems, keep it disabled by default and enable it only for specific routes, jobs, or error investigations.
+
+Useful controls for larger projects:
+
+- `include=[...]` to trace only your app code.
+- `exclude=[...]` to hide noisy helpers.
+- `min_duration_ms=...` to focus on slower calls.
+- `max_depth=...` to keep output compact.
+- `MITHRA_FLOW=0` to disable globally.
 
 ## Quick Start
 

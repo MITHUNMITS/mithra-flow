@@ -12,6 +12,7 @@ authors = [
   { name = "MITHUNMITS" },
 ]
 license = "MIT"
+license-files = ["LICENSE"]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
@@ -44,6 +45,7 @@ examples = [
 Homepage = "https://github.com/MITHUNMITS/mithra-flow"
 Repository = "https://github.com/MITHUNMITS/mithra-flow"
 Issues = "https://github.com/MITHUNMITS/mithra-flow/issues"
+Changelog = "https://github.com/MITHUNMITS/mithra-flow/blob/main/CHANGELOG.md"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/mithra_flow"]
