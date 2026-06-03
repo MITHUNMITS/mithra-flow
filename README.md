@@ -1,7 +1,7 @@
 # mithra-flow
 
 <p align="center">
-  <img src="mithra_flow.png" alt="MithraFlow Banner" width="100%">
+  <img src="https://raw.githubusercontent.com/MITHUNMITS/mithra-flow/main/mithra_flow.png" alt="MithraFlow Banner">
 </p>
 
 <p align="center">
