@@ -179,12 +179,15 @@ Output:
 | `output="none"` | Collect/save without terminal printing. |
 | `save_to="trace.json"` | Write trace output to disk. |
 | `return_trace=True` | Return `MFlowResult(value, trace)`. |
+| `trace_dependencies=True` | Also trace dependency/library frames such as `.venv` and `site-packages`. Off by default. |
 
 Disable globally:
 
 ```bash
 MITHRA_FLOW=0 python3 your_script.py
 ```
+
+By default, `mithra-flow` is code-level only: it ignores frames from `.venv`, `venv`, `site-packages`, `dist-packages`, and `__pypackages__`. This keeps SQLAlchemy, Passlib, FastAPI, and other dependency internals out of the tree unless you explicitly enable `trace_dependencies=True`.
 
 ## FastAPI Example
 

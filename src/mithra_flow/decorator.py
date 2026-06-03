@@ -48,6 +48,7 @@ class _TraceConfig:
     output: OutputFormat = "terminal"
     save_to: str | None = None
     return_trace: bool = False
+    trace_dependencies: bool = False
 
 
 @dataclass
@@ -90,6 +91,7 @@ def mflow(
     output: OutputFormat = "terminal",
     save_to: str | None = None,
     return_trace: bool = False,
+    trace_dependencies: bool = False,
 ) -> Callable[[F], F]:
     ...
 
@@ -112,6 +114,7 @@ def mflow(
     output: OutputFormat = "terminal",
     save_to: str | None = None,
     return_trace: bool = False,
+    trace_dependencies: bool = False,
 ) -> F | Callable[[F], F]:
     """Trace project calls made while the decorated function executes."""
 
@@ -131,6 +134,7 @@ def mflow(
         output=output,
         save_to=save_to,
         return_trace=return_trace,
+        trace_dependencies=trace_dependencies,
     )
 
     def decorate(target: F) -> F:
@@ -196,6 +200,7 @@ class trace:
         output: OutputFormat = "terminal",
         save_to: str | None = None,
         return_trace: bool = False,
+        trace_dependencies: bool = False,
     ) -> None:
         self.config = _make_config(
             name=name,
@@ -213,6 +218,7 @@ class trace:
             output=output,
             save_to=save_to,
             return_trace=return_trace,
+            trace_dependencies=trace_dependencies,
         )
         self.state: _TraceState | None = None
         self.token: contextvars.Token[_TraceState | None] | None = None
@@ -286,6 +292,7 @@ def _make_config(
     output: OutputFormat,
     save_to: str | None,
     return_trace: bool,
+    trace_dependencies: bool,
 ) -> _TraceConfig:
     env_enabled = os.getenv("MITHRA_FLOW", "1").lower() not in {"0", "false", "no", "off"}
     return _TraceConfig(
@@ -303,6 +310,7 @@ def _make_config(
         output=output,
         save_to=save_to,
         return_trace=return_trace,
+        trace_dependencies=trace_dependencies,
     )
 
 
@@ -438,6 +446,9 @@ def _should_trace_frame(state: _TraceState, frame: FrameType) -> bool:
     module = frame.f_globals.get("__name__", "")
     target = f"{module}:{frame.f_code.co_name}:{filename}"
 
+    if not state.config.trace_dependencies and _is_dependency_frame(filename):
+        return False
+
     if _matches(target, state.config.exclude):
         return False
 
@@ -457,6 +468,21 @@ def _is_external_frame(filename: str) -> bool:
 
     cwd = os.path.abspath(os.getcwd())
     return not os.path.abspath(filename).startswith(cwd + os.sep)
+
+
+def _is_dependency_frame(filename: str) -> bool:
+    parts = set(Path(filename).parts)
+    return bool(
+        parts
+        & {
+            ".venv",
+            "venv",
+            "env",
+            "site-packages",
+            "dist-packages",
+            "__pypackages__",
+        }
+    )
 
 
 def _is_coroutine_suspension(frame: FrameType, arg: Any) -> bool:

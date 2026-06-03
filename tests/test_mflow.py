@@ -3,7 +3,7 @@ import json
 import re
 
 from mithra_flow import MFlowResult, __version__, mflow, span, trace
-from mithra_flow.decorator import _banner
+from mithra_flow.decorator import _banner, _is_dependency_frame
 
 
 def sync_child():
@@ -218,3 +218,9 @@ def test_context_manager_collects_result(capsys):
 def test_banner_uses_package_version():
     assert f"v{__version__}" in _banner()
     assert "v1.00" not in _banner()
+
+
+def test_dependency_frames_are_detected():
+    assert _is_dependency_frame("/project/.venv/lib/python3.12/site-packages/sqlalchemy/sql.py")
+    assert _is_dependency_frame("/project/venv/lib/python3.12/site-packages/passlib/hash.py")
+    assert not _is_dependency_frame("/project/app/services/auth.py")
