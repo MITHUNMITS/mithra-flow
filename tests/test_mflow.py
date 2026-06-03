@@ -36,7 +36,7 @@ async def async_grandchild():
 
 
 async def async_grandchild_two():
-    await asyncio.sleep(0)
+    await asyncio.sleep(0.001)
     return "grandchild-two"
 
 

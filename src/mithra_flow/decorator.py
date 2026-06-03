@@ -462,9 +462,17 @@ def _is_external_frame(filename: str) -> bool:
 def _is_coroutine_suspension(frame: FrameType) -> bool:
     if not frame.f_code.co_flags & inspect.CO_COROUTINE:
         return False
-    if frame.f_lasti < 0 or frame.f_lasti >= len(frame.f_code.co_code):
-        return False
-    return dis.opname[frame.f_code.co_code[frame.f_lasti]] == "YIELD_VALUE"
+    opcode = _current_opcode(frame)
+    return opcode.startswith("YIELD")
+
+
+def _current_opcode(frame: FrameType) -> str:
+    if frame.f_lasti < 0:
+        return ""
+    for instruction in dis.get_instructions(frame.f_code):
+        if instruction.offset == frame.f_lasti:
+            return instruction.opname
+    return ""
 
 
 def _print_trace(root: TraceNode, config: _TraceConfig) -> None:
