@@ -1,12 +1,25 @@
 # mithra-flow
 
-[![PyPI](https://img.shields.io/pypi/v/mithra-flow.svg)](https://pypi.org/project/mithra-flow/)
-[![Python](https://img.shields.io/pypi/pyversions/mithra-flow.svg)](https://pypi.org/project/mithra-flow/)
-[![Tests](https://github.com/MITHUNMITS/mithra-flow/actions/workflows/test.yml/badge.svg)](https://github.com/MITHUNMITS/mithra-flow/actions/workflows/test.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+<p align="center">
+  <img src="mithra_flow.png" alt="MithraFlow Banner" width="100%">
+</p>
+
+<p align="center">
+  <a href="https://pypi.org/project/mithra-flow/">
+    <img src="https://img.shields.io/pypi/v/mithra-flow.svg" alt="PyPI">
+  </a>
+  <a href="https://pypi.org/project/mithra-flow/">
+    <img src="https://img.shields.io/pypi/pyversions/mithra-flow.svg" alt="Python">
+  </a>
+  <a href="https://github.com/MITHUNMITS/mithra-flow/actions/workflows/test.yml">
+    <img src="https://github.com/MITHUNMITS/mithra-flow/actions/workflows/test.yml/badge.svg" alt="Tests">
+  </a>
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT License">
+  </a>
+</p>
 
 
-![MithraFlow Banner](mithra_flow.png)
 
 `mithra-flow` is a terminal-first Python tracing decorator. It shows the nested function calls executed inside one sync or async entry point, with timings, filters, manual spans, and export formats.
 
