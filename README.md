@@ -205,7 +205,7 @@ Disable globally:
 MITHRA_FLOW=0 python3 your_script.py
 ```
 
-By default, `mithra-flow` is code-level only. `@mflow` automatically detects the project root from the decorated function file, then traces only code under that root. It also ignores dependency folders such as `.venv`, `venv`, `site-packages`, `dist-packages`, and `__pypackages__`, plus common dependency module prefixes such as SQLAlchemy, SQLModel, Passlib, FastAPI, Starlette, Pydantic, Uvicorn, HTTPX, and AnyIO. Dependency internals are included only when you explicitly enable `trace_dependencies=True`.
+By default, `mithra-flow` is code-level only. `@mflow` automatically detects the project root from the decorated function file, then traces only files under that root. It ignores dependency, cache, and build folders by path, including `.venv`, `venv`, `site-packages`, `dist-packages`, `__pypackages__`, `.tox`, `.nox`, `node_modules`, `build`, and `dist`. Dependency internals are included only when you explicitly enable `trace_dependencies=True`.
 
 ## FastAPI Example
 

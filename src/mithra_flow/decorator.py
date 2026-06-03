@@ -33,23 +33,24 @@ _PROJECT_MARKERS = (
     "poetry.lock",
     ".git",
 )
-_DEPENDENCY_MODULE_PREFIXES = (
-    "anyio",
-    "bcrypt",
-    "fastapi",
-    "greenlet",
-    "h11",
-    "httpcore",
-    "httpx",
-    "jose",
-    "jwt",
-    "passlib",
-    "pydantic",
-    "sqlalchemy",
-    "sqlmodel",
-    "starlette",
-    "typing_extensions",
-    "uvicorn",
+_DEPENDENCY_PATH_PARTS = frozenset(
+    {
+        ".eggs",
+        ".mypy_cache",
+        ".nox",
+        ".pytest_cache",
+        ".ruff_cache",
+        ".tox",
+        ".venv",
+        "__pypackages__",
+        "build",
+        "dist",
+        "dist-packages",
+        "env",
+        "node_modules",
+        "site-packages",
+        "venv",
+    }
 )
 
 
@@ -492,9 +493,6 @@ def _should_trace_frame(state: _TraceState, frame: FrameType) -> bool:
     module = frame.f_globals.get("__name__", "")
     target = f"{module}:{frame.f_code.co_name}:{filename}"
 
-    if not state.config.trace_dependencies and _is_dependency_module(module):
-        return False
-
     if not state.config.trace_dependencies and _is_external_frame(filename, state.config.root_path):
         return False
 
@@ -536,25 +534,7 @@ def _discover_project_root(filename: str) -> str:
 
 
 def _is_dependency_frame(filename: str) -> bool:
-    parts = set(Path(filename).parts)
-    return bool(
-        parts
-        & {
-            ".venv",
-            "venv",
-            "env",
-            "site-packages",
-            "dist-packages",
-            "__pypackages__",
-        }
-    )
-
-
-def _is_dependency_module(module: str) -> bool:
-    return any(
-        module == dependency or module.startswith(f"{dependency}.")
-        for dependency in _DEPENDENCY_MODULE_PREFIXES
-    )
+    return bool(set(Path(filename).parts) & _DEPENDENCY_PATH_PARTS)
 
 
 def _is_coroutine_suspension(frame: FrameType, arg: Any) -> bool:
