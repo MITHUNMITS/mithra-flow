@@ -5,8 +5,12 @@
 [![Tests](https://github.com/MITHUNMITS/mithra-flow/actions/workflows/test.yml/badge.svg)](https://github.com/MITHUNMITS/mithra-flow/actions/workflows/test.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-`mithra-flow` traces nested Python function calls while a decorated function runs.
-It is built for terminal-first debugging: no web UI, no database, no framework lock-in.
+
+![MithraFlow Banner](mithra_flow.png)
+
+`mithra-flow` is a terminal-first Python tracing decorator. It shows the nested function calls executed inside one sync or async entry point, with timings, filters, manual spans, and export formats.
+
+It is designed for debugging and code-flow understanding, without adding a web UI, database, agent, or framework integration.
 
 ```text
 ──────── MITHRA FLOW  v1.0 ─────────
