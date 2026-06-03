@@ -33,6 +33,24 @@ _PROJECT_MARKERS = (
     "poetry.lock",
     ".git",
 )
+_DEPENDENCY_MODULE_PREFIXES = (
+    "anyio",
+    "bcrypt",
+    "fastapi",
+    "greenlet",
+    "h11",
+    "httpcore",
+    "httpx",
+    "jose",
+    "jwt",
+    "passlib",
+    "pydantic",
+    "sqlalchemy",
+    "sqlmodel",
+    "starlette",
+    "typing_extensions",
+    "uvicorn",
+)
 
 
 @dataclass
@@ -474,6 +492,9 @@ def _should_trace_frame(state: _TraceState, frame: FrameType) -> bool:
     module = frame.f_globals.get("__name__", "")
     target = f"{module}:{frame.f_code.co_name}:{filename}"
 
+    if not state.config.trace_dependencies and _is_dependency_module(module):
+        return False
+
     if not state.config.trace_dependencies and _is_external_frame(filename, state.config.root_path):
         return False
 
@@ -526,6 +547,13 @@ def _is_dependency_frame(filename: str) -> bool:
             "dist-packages",
             "__pypackages__",
         }
+    )
+
+
+def _is_dependency_module(module: str) -> bool:
+    return any(
+        module == dependency or module.startswith(f"{dependency}.")
+        for dependency in _DEPENDENCY_MODULE_PREFIXES
     )
 
 

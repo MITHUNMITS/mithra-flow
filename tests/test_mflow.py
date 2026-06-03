@@ -7,6 +7,7 @@ from mithra_flow.decorator import (
     _banner,
     _discover_project_root,
     _is_dependency_frame,
+    _is_dependency_module,
     _is_external_frame,
 )
 
@@ -229,6 +230,15 @@ def test_dependency_frames_are_detected():
     assert _is_dependency_frame("/project/.venv/lib/python3.12/site-packages/sqlalchemy/sql.py")
     assert _is_dependency_frame("/project/venv/lib/python3.12/site-packages/passlib/hash.py")
     assert not _is_dependency_frame("/project/app/services/auth.py")
+
+
+def test_dependency_modules_are_detected():
+    assert _is_dependency_module("sqlalchemy.sql.elements")
+    assert _is_dependency_module("sqlmodel")
+    assert _is_dependency_module("passlib.context")
+    assert _is_dependency_module("fastapi.routing")
+    assert not _is_dependency_module("controllers.user")
+    assert not _is_dependency_module("helpers.auth")
 
 
 def test_project_root_is_discovered_from_decorated_file():
