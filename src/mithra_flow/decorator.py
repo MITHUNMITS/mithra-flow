@@ -10,7 +10,7 @@ import os
 import sys
 import time
 from collections.abc import Callable, Iterable
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from types import FrameType
 from typing import Any, Literal, TypeVar, overload
@@ -24,6 +24,15 @@ from .version import __version__
 
 F = TypeVar("F", bound=Callable[..., Any])
 OutputFormat = Literal["terminal", "dict", "json", "mermaid", "none"]
+_PROJECT_MARKERS = (
+    "pyproject.toml",
+    "setup.py",
+    "setup.cfg",
+    "requirements.txt",
+    "Pipfile",
+    "poetry.lock",
+    ".git",
+)
 
 
 @dataclass
@@ -49,6 +58,7 @@ class _TraceConfig:
     save_to: str | None = None
     return_trace: bool = False
     trace_dependencies: bool = False
+    root_path: str | None = None
 
 
 @dataclass
@@ -92,6 +102,7 @@ def mflow(
     save_to: str | None = None,
     return_trace: bool = False,
     trace_dependencies: bool = False,
+    root_path: str | None = None,
 ) -> Callable[[F], F]:
     ...
 
@@ -115,6 +126,7 @@ def mflow(
     save_to: str | None = None,
     return_trace: bool = False,
     trace_dependencies: bool = False,
+    root_path: str | None = None,
 ) -> F | Callable[[F], F]:
     """Trace project calls made while the decorated function executes."""
 
@@ -135,16 +147,19 @@ def mflow(
         save_to=save_to,
         return_trace=return_trace,
         trace_dependencies=trace_dependencies,
+        root_path=root_path,
     )
 
     def decorate(target: F) -> F:
+        target_config = _config_for_target(config, target)
+
         if inspect.iscoroutinefunction(target):
 
             @functools.wraps(target)
             async def async_wrapper(*args: Any, **kwargs: Any) -> Any:
-                if not config.enabled:
+                if not target_config.enabled:
                     return await target(*args, **kwargs)
-                state, token = _start_trace(config)
+                state, token = _start_trace(target_config)
                 try:
                     value = await target(*args, **kwargs)
                     _finish_trace(state)
@@ -160,9 +175,9 @@ def mflow(
 
         @functools.wraps(target)
         def sync_wrapper(*args: Any, **kwargs: Any) -> Any:
-            if not config.enabled:
+            if not target_config.enabled:
                 return target(*args, **kwargs)
-            state, token = _start_trace(config)
+            state, token = _start_trace(target_config)
             try:
                 value = target(*args, **kwargs)
                 _finish_trace(state)
@@ -201,6 +216,7 @@ class trace:
         save_to: str | None = None,
         return_trace: bool = False,
         trace_dependencies: bool = False,
+        root_path: str | None = None,
     ) -> None:
         self.config = _make_config(
             name=name,
@@ -219,6 +235,7 @@ class trace:
             save_to=save_to,
             return_trace=return_trace,
             trace_dependencies=trace_dependencies,
+            root_path=root_path,
         )
         self.state: _TraceState | None = None
         self.token: contextvars.Token[_TraceState | None] | None = None
@@ -293,6 +310,7 @@ def _make_config(
     save_to: str | None,
     return_trace: bool,
     trace_dependencies: bool,
+    root_path: str | None,
 ) -> _TraceConfig:
     env_enabled = os.getenv("MITHRA_FLOW", "1").lower() not in {"0", "false", "no", "off"}
     return _TraceConfig(
@@ -311,11 +329,21 @@ def _make_config(
         save_to=save_to,
         return_trace=return_trace,
         trace_dependencies=trace_dependencies,
+        root_path=os.path.abspath(root_path) if root_path else None,
     )
 
 
 def _normalize_filters(filters: Iterable[str] | None) -> tuple[str, ...]:
     return tuple(str(item) for item in filters or () if str(item))
+
+
+def _config_for_target(config: _TraceConfig, target: Callable[..., Any]) -> _TraceConfig:
+    if config.root_path is not None:
+        return config
+    filename = getattr(target, "__code__", None)
+    if filename is None:
+        return replace(config, root_path=_discover_project_root(os.getcwd()))
+    return replace(config, root_path=_discover_project_root(filename.co_filename))
 
 
 def _start_trace(
@@ -446,6 +474,9 @@ def _should_trace_frame(state: _TraceState, frame: FrameType) -> bool:
     module = frame.f_globals.get("__name__", "")
     target = f"{module}:{frame.f_code.co_name}:{filename}"
 
+    if not state.config.trace_dependencies and _is_external_frame(filename, state.config.root_path):
+        return False
+
     if not state.config.trace_dependencies and _is_dependency_frame(filename):
         return False
 
@@ -455,19 +486,32 @@ def _should_trace_frame(state: _TraceState, frame: FrameType) -> bool:
     if state.config.include:
         return _matches(target, state.config.include)
 
-    return not _is_external_frame(filename)
+    return True
 
 
 def _matches(value: str, filters: tuple[str, ...]) -> bool:
     return any(item in value or fnmatch.fnmatch(value, item) for item in filters)
 
 
-def _is_external_frame(filename: str) -> bool:
+def _is_external_frame(filename: str, root_path: str | None = None) -> bool:
     if filename.startswith("<"):
         return True
 
-    cwd = os.path.abspath(os.getcwd())
-    return not os.path.abspath(filename).startswith(cwd + os.sep)
+    root = os.path.abspath(root_path or os.getcwd())
+    path = os.path.abspath(filename)
+    return path != root and not path.startswith(root + os.sep)
+
+
+def _discover_project_root(filename: str) -> str:
+    path = Path(filename)
+    if str(filename).startswith("<"):
+        return os.path.abspath(os.getcwd())
+    start = path if path.is_dir() else path.parent
+    start = start.resolve()
+    for candidate in (start, *start.parents):
+        if any((candidate / marker).exists() for marker in _PROJECT_MARKERS):
+            return str(candidate)
+    return str(start)
 
 
 def _is_dependency_frame(filename: str) -> bool:

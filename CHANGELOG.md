@@ -12,6 +12,7 @@ Fixed:
 
 - Improved async coroutine suspension detection across Python versions.
 - Filter dependency/library frames by default so traces stay code-level.
+- Automatically detect the project root from the decorated function file for plain `@mflow`.
 
 Changed:
 

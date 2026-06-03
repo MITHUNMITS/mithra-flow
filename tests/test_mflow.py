@@ -3,7 +3,12 @@ import json
 import re
 
 from mithra_flow import MFlowResult, __version__, mflow, span, trace
-from mithra_flow.decorator import _banner, _is_dependency_frame
+from mithra_flow.decorator import (
+    _banner,
+    _discover_project_root,
+    _is_dependency_frame,
+    _is_external_frame,
+)
 
 
 def sync_child():
@@ -224,3 +229,16 @@ def test_dependency_frames_are_detected():
     assert _is_dependency_frame("/project/.venv/lib/python3.12/site-packages/sqlalchemy/sql.py")
     assert _is_dependency_frame("/project/venv/lib/python3.12/site-packages/passlib/hash.py")
     assert not _is_dependency_frame("/project/app/services/auth.py")
+
+
+def test_project_root_is_discovered_from_decorated_file():
+    root = _discover_project_root(__file__)
+
+    assert root.endswith("mithra-flow")
+
+
+def test_external_frames_are_checked_against_project_root():
+    root = _discover_project_root(__file__)
+
+    assert not _is_external_frame(__file__, root)
+    assert _is_external_frame("/tmp/outside.py", root)

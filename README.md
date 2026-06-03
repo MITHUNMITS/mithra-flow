@@ -1,4 +1,3 @@
-# mithra-flow
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/MITHUNMITS/mithra-flow/main/mithra_flow.png" alt="MithraFlow Banner">
@@ -117,7 +116,8 @@ Tracing uses `sys.setprofile`, so it is intended for debugging, local developmen
 
 Useful controls for larger projects:
 
-- `include=[...]` to trace only your app code.
+- `@mflow` automatically traces code under the detected project root.
+- `include=[...]` to narrow tracing further to specific app folders.
 - `exclude=[...]` to hide noisy helpers.
 - `min_duration_ms=...` to focus on slower calls.
 - `max_depth=...` to keep output compact.
@@ -197,6 +197,7 @@ Output:
 | `save_to="trace.json"` | Write trace output to disk. |
 | `return_trace=True` | Return `MFlowResult(value, trace)`. |
 | `trace_dependencies=True` | Also trace dependency/library frames such as `.venv` and `site-packages`. Off by default. |
+| `root_path="/path/to/project"` | Override automatic project-root detection. Usually not needed. |
 
 Disable globally:
 
@@ -204,7 +205,7 @@ Disable globally:
 MITHRA_FLOW=0 python3 your_script.py
 ```
 
-By default, `mithra-flow` is code-level only: it ignores frames from `.venv`, `venv`, `site-packages`, `dist-packages`, and `__pypackages__`. This keeps SQLAlchemy, Passlib, FastAPI, and other dependency internals out of the tree unless you explicitly enable `trace_dependencies=True`.
+By default, `mithra-flow` is code-level only. `@mflow` automatically detects the project root from the decorated function file, then traces only code under that root. It also ignores frames from `.venv`, `venv`, `site-packages`, `dist-packages`, and `__pypackages__`. This keeps SQLAlchemy, Passlib, FastAPI, and other dependency internals out of the tree unless you explicitly enable `trace_dependencies=True`.
 
 ## FastAPI Example
 
