@@ -5,6 +5,7 @@ Maintenance release focused on CI stability, packaging polish, and async tracing
 ## Fixed
 
 - Improved async coroutine suspension detection across Python versions.
+- Filtered dependency/library frames by default so traces stay focused on code under the project root.
 - Fixed CI support matrix by targeting Python 3.10+.
 - Updated GitHub Actions runtime versions to avoid Node.js 20 deprecation warnings.
 
@@ -13,6 +14,18 @@ Maintenance release focused on CI stability, packaging polish, and async tracing
 - Package versioning now comes from Git tags via `hatch-vcs`.
 - Release flow is simpler: create a GitHub Release tag like `v1.0.1` to publish PyPI version `1.0.1`.
 - Added project polish files: changelog, MIT license, CI workflow, README badges, and package metadata.
+
+## Default Trace Scope
+
+By default, `mithra-flow` traces project code only and ignores dependency folders such as `.venv`, `venv`, `site-packages`, `dist-packages`, and `__pypackages__`.
+
+To trace dependency/library internals, opt in explicitly:
+
+```python
+@mflow(trace_dependencies=True)
+def parent():
+    ...
+```
 
 ## Verified
 

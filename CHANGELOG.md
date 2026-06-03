@@ -4,6 +4,20 @@ All notable changes to `mithra-flow` are documented here.
 
 This project follows tag-based releases. A Git tag like `v1.0.1` publishes PyPI version `1.0.1`.
 
+## 1.0.1
+
+Maintenance release.
+
+Fixed:
+
+- Improved async coroutine suspension detection across Python versions.
+- Filter dependency/library frames by default so traces stay code-level.
+
+Changed:
+
+- Package versioning now comes from Git tags via `hatch-vcs`.
+- GitHub Actions now tests Python 3.10 through 3.13.
+
 ## 1.0
 
 Initial public release.
