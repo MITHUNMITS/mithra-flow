@@ -675,7 +675,7 @@ MFlowResult(value="ok", trace={...})
 
 ## Versioning
 
-The banner version comes from package versioning:
+The banner version comes from the installed package version:
 
 ```python
 from mithra_flow import __version__
@@ -683,10 +683,39 @@ from mithra_flow import __version__
 print(__version__)
 ```
 
-Current source:
+Package versions are generated from Git tags.
 
-```python
-__version__ = "1.0"
+Examples:
+
+| Git Tag | PyPI Version |
+| --- | --- |
+| `v1.0` | `1.0` |
+| `v1.0.1` | `1.0.1` |
+| `v2.0.0` | `2.0.0` |
+
+## Release With VS Code And GitHub
+
+Normal code changes:
+
+1. Make changes.
+2. Commit in VS Code Source Control.
+3. Push `main` from VS Code.
+
+Publish a new PyPI version:
+
+1. Open the GitHub repository.
+2. Go to `Releases`.
+3. Click `Draft a new release`.
+4. Create a new tag, for example `v1.0.1`.
+5. Publish the release.
+
+GitHub Actions will build and publish that tag to PyPI automatically.
+
+Terminal version if you prefer commands:
+
+```bash
+git tag v1.0.1
+git push origin v1.0.1
 ```
 
-`pyproject.toml` reads the version from `src/mithra_flow/version.py`.
+You do not need to edit `src/mithra_flow/version.py` for every release.
